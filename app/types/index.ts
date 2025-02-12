@@ -89,3 +89,24 @@ export interface Document {
   chunks: number | null
   progress?: string
 }
+
+// utils/fileTypes.ts
+export const ALLOWED_FILE_TYPES = [
+  // PDF
+  'application/pdf',
+
+  // MS Word (older)
+  'application/msword',
+
+  // DOCX
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+
+  // Plain text
+  'text/plain',
+
+  // ... add more as needed
+]
+
+export function isAllowedFileType(file: File): boolean {
+  return ALLOWED_FILE_TYPES.includes(file.type)
+}

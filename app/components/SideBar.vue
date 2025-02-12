@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UploadStreamResponse } from '~/types'
+import { ALLOWED_FILE_TYPES, isAllowedFileType } from '~/utils/fileCheck'
 
 defineEmits(['hideDrawer'])
 const toast = useToast()
@@ -9,9 +10,26 @@ const documents = useDocuments()
 
 // click to upload
 const { open, onChange, reset } = useFileDialog({
-  accept: 'application/pdf',
+  accept: ALLOWED_FILE_TYPES.join(','),
+  multiple: true,
 })
-onChange(files => uploadFile(files))
+
+onChange(async (files) => {
+  if (!files) return
+  // Filter out non-allowed types on the frontend
+  const filteredFiles = [...files].filter(file => isAllowedFileType(file))
+  if (filteredFiles.length < (files as File[]).length) {
+    // Show a warning about unsupported file types
+    toast.add({
+      title: 'Some files not supported',
+      description: `Only the following types are allowed: ${ALLOWED_FILE_TYPES.join(', ')}`,
+      color: 'warning',
+    })
+  }
+  await uploadFile(filteredFiles)
+})
+
+//onChange(files => uploadFile(files))
 
 // drag and drop
 const dropZoneRef = ref<HTMLDivElement>()
