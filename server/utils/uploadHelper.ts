@@ -1,5 +1,5 @@
 import mammoth from "mammoth";
-import Papa from "papaparse";
+import { parse } from "csv-parse/sync";
 import * as XLSX from "xlsx";
 import Tesseract from "tesseract.js";
 
@@ -28,9 +28,16 @@ export async function extractFileToText(file: File): Promise<string> {
   } else if (mime === "text/plain") {
     return Buffer.from(buffer).toString("utf8");
   } else if (mime === "text/csv") {
-    const csvText = Buffer.from(buffer).toString("utf8");
-    const { data } = Papa.parse(csvText);
-    return data.map((row) => row.join(" ")).join("\n");
+        // === Use csv-parse/sync instead of PapaParse ===
+        const csvText = Buffer.from(buffer).toString("utf8");
+        // parse returns an array of arrays by default
+        const records = parse(csvText, {
+          skip_empty_lines: true,
+          // other options as needed (e.g., delimiter)
+        });
+        // records is an array of arrays
+        // so we convert each row to a string, then join rows with newlines
+        return records.map((row: string[]) => row.join(" ")).join("\n");    
   } else if (
     mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   ) {
