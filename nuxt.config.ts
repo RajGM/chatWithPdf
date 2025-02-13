@@ -45,6 +45,10 @@ export default defineNuxtConfig({
     experimental: {
       openAPI: true,
     },
+    externals: {
+      // Inline these packages so that Nitro bundles them rather than treating them as externals
+      inline: ["csv-parse", "readable-stream", "string_decoder"]
+    },
   },
 
   // https://eslint.nuxt.com

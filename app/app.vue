@@ -3,6 +3,13 @@ useHead({
   bodyAttrs: {
     class: 'bg-white dark:bg-zinc-900 overscroll-none',
   },
+  script: [
+    {
+      src: 'https://apis.google.com/js/api.js',
+      async: true,
+      defer: true,
+    },
+  ],
 })
 useSeoMeta({
   title: 'Chat with PDF',

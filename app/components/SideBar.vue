@@ -85,6 +85,16 @@ function setExampleSession(exampleSessionId: string) {
   documents.value.push(documentInfo)
   sessionId.value = exampleSessionId
 }
+
+// Import the DealRoomModal component
+// Create a ref to access the modal's exposed methods
+import {DealRoomModal} from '~/app/components/DealRoomModal.vue'
+const dealRoomModalRef = ref<InstanceType<typeof DealRoomModal>>()
+
+// Function to open the Deal Room modal
+function openDealRoomModal() {
+  dealRoomModalRef.value?.openModal()
+}
 </script>
 
 <template>
@@ -95,23 +105,14 @@ function setExampleSession(exampleSessionId: string) {
           Documents
         </h2>
       </div>
-      <UButton
-        icon="i-heroicons-x-mark-20-solid"
-        color="neutral"
-        variant="ghost"
-        class="md:hidden"
-        @click="$emit('hideDrawer')"
-      />
+      <UButton icon="i-heroicons-x-mark-20-solid" color="neutral" variant="ghost" class="md:hidden"
+        @click="$emit('hideDrawer')" />
     </div>
     <USeparator />
     <div class="p-4 space-y-6 overflow-y-auto flex flex-col">
-      <UCard
-        ref="dropZoneRef"
-        class="transition-all flex flex-grow mb-2 cursor-pointer hover:ring-emerald-500"
+      <UCard ref="dropZoneRef" class="transition-all flex flex-grow mb-2 cursor-pointer hover:ring-emerald-500"
         :class="{ 'ring-blue-500  ring-opacity-50': isOverDropZone }"
-        :ui="{ body: 'flex flex-col items-center justify-center' }"
-        @click="open"
-      >
+        :ui="{ body: 'flex flex-col items-center justify-center' }" @click="open">
         <p class="mb-1.5 text-lg font-semibold text-primary">
           Upload a file
         </p>
@@ -119,6 +120,20 @@ function setExampleSession(exampleSessionId: string) {
           Drag and drop or click to upload
         </p>
       </UCard>
+
+      <!-- Add a small text or heading for Google Drive -->
+      <p class="my-2 text-zinc-600 dark:text-zinc-300 text-sm">
+        Or select from Google Drive:
+      </p>
+
+      <!-- The Google Picker component -->
+      <GooglePicker @file-selected="handleGoogleDriveFile" />
+
+       <!-- Button to open the Deal Room modal -->
+       <UButton class="mt-4" color="primary" @click="openDealRoomModal">
+        Create Deal Room
+      </UButton>
+
     </div>
 
     <div class="px-4 pb-4 flex-1 space-y-2 overflow-y-auto flex flex-col">
@@ -161,15 +176,14 @@ function setExampleSession(exampleSessionId: string) {
 
     <USeparator />
     <div class="p-2">
-      <UButton
-        to="https://hub.nuxt.com?utm_source=chat-with-pdf"
-        target="_blank"
-        variant="link"
-        color="neutral"
-        size="sm"
-      >
+      <UButton to="https://hub.nuxt.com?utm_source=chat-with-pdf" target="_blank" variant="link" color="neutral"
+        size="sm">
         Hosted on NuxtHub
       </UButton>
     </div>
+
+        <!-- Include the DealRoomModal component -->
+        <DealRoomModal ref="dealRoomModalRef" />
+
   </div>
 </template>
