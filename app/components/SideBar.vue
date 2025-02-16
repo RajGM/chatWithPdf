@@ -88,13 +88,9 @@ function setExampleSession(exampleSessionId: string) {
 
 // Import the DealRoomModal component
 // Create a ref to access the modal's exposed methods
-import {DealRoomModal} from '~/app/components/DealRoomModal.vue'
+import DealRoomModal from './DealRoom.vue'
 const dealRoomModalRef = ref<InstanceType<typeof DealRoomModal>>()
 
-// Function to open the Deal Room modal
-function openDealRoomModal() {
-  dealRoomModalRef.value?.openModal()
-}
 </script>
 
 <template>
@@ -129,10 +125,8 @@ function openDealRoomModal() {
       <!-- The Google Picker component -->
       <GooglePicker @file-selected="handleGoogleDriveFile" />
 
-       <!-- Button to open the Deal Room modal -->
-       <UButton class="mt-4" color="primary" @click="openDealRoomModal">
-        Create Deal Room
-      </UButton>
+        <!-- Include the DealRoomModal component -->
+        <DealRoomModal ref="dealRoomModalRef" />
 
     </div>
 
@@ -181,9 +175,6 @@ function openDealRoomModal() {
         Hosted on NuxtHub
       </UButton>
     </div>
-
-        <!-- Include the DealRoomModal component -->
-        <DealRoomModal ref="dealRoomModalRef" />
 
   </div>
 </template>

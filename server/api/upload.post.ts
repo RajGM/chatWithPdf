@@ -30,10 +30,12 @@ export default defineEventHandler(async (event) => {
         extractTextFromPDF(file),
       ])
       await streamResponse({ message: 'Extracted text from PDF' })
-
+      
+      console.log("INSERT DOC")
       const insertResult = await insertDocument(file, textContent, sessionId, r2Url)
       const documentId = insertResult[0].insertedId
 
+      console.log("DOCUMENT ID", documentId)
       // split text into chunks
       const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
@@ -42,11 +44,14 @@ export default defineEventHandler(async (event) => {
       const chunks = await splitter.splitText(textContent)
       await streamResponse({ message: 'Split text into chunks' })
 
+      console.log("CHUNKS SPLITTED", chunks)
+
       // generate and store vectors for each chunk
       await processVectors(chunks, sessionId, documentId, streamResponse)
       await streamResponse({ message: 'Inserted vectors', chunks: chunks.length })
     }
     catch (error) {
+      console.log('Error processing upload:', error)
       await streamResponse({ error: (error as Error).message })
     }
     finally {
