@@ -1,63 +1,86 @@
 // original: https://github.com/RafalWilinski/cloudflare-rag/blob/2f4341bcf462c8f86001b601e59e60c25b1a6ea8/functions/api/upload.ts
 
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 export default defineEventHandler(async (event) => {
-  const formData = await readFormData(event)
-  const sessionId = formData.get('sessionId') as string
-  const file = formData.get('file') as File
+  const formData = await readFormData(event);
+  const sessionId = formData.get("sessionId") as string;
+  const file = formData.get("file") as File;
 
-  if (!sessionId) throw createError({ statusCode: 400, message: 'Missing sessionId' })
-  if (!file || !file.size) throw createError({ statusCode: 400, message: 'No file provided' })
-  ensureBlob(file, { maxSize: '8MB', types: ['application/pdf'] })
-
+  if (!sessionId)
+    throw createError({ statusCode: 400, message: 'Missing sessionId' });
+  if (!file || !file.size)
+    throw createError({ statusCode: 400, message: 'No file provided' });
+  ensureBlob(file, {
+    maxSize: '8MB',
+    types: [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+      'text/plain', // txt
+      'text/csv', // csv
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+    ],
+  })
+  
   // prevent uploading files to example sessions
-  const exampleSessionIds = useExampleSessions()
+  const exampleSessionIds = useExampleSessions();
   if (exampleSessionIds.some(({ id }) => id === sessionId)) {
-    throw createError({ statusCode: 400, message: 'File uploading unavailable on example sessions' })
+    throw createError({
+      statusCode: 400,
+      message: "File uploading unavailable on example sessions",
+    });
   }
 
   // create stream and return it
-  const eventStream = createEventStream(event)
-  const streamResponse = (data: object) => eventStream.push(JSON.stringify(data))
+  const eventStream = createEventStream(event);
+  const streamResponse = (data: object) =>
+    eventStream.push(JSON.stringify(data));
 
   // prevent worker from being killed while processing
-  event.waitUntil((async () => {
-    try {
-      // upload file, extract text, and insert document
-      const [r2Url, textContent] = await Promise.all([
-        uploadPDF(file, sessionId),
-        extractTextFromPDF(file),
-      ])
-      await streamResponse({ message: 'Extracted text from PDF' })
-      
-      console.log("INSERT DOC")
-      const insertResult = await insertDocument(file, textContent, sessionId, r2Url)
-      const documentId = insertResult[0].insertedId
+  event.waitUntil(
+    (async () => {
+      try {
+        // upload file, extract text, and insert document
+        const [r2Url, textContent] = await Promise.all([
+          uploadPDF(file, sessionId),
+          extractTextFromPDF(file),
+        ]);
+        await streamResponse({ message: "Extracted text from PDF" });
 
-      console.log("DOCUMENT ID", documentId)
-      // split text into chunks
-      const splitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 500,
-        chunkOverlap: 100,
-      })
-      const chunks = await splitter.splitText(textContent)
-      await streamResponse({ message: 'Split text into chunks' })
+        console.log("BEFORE INSERTING");
+        const insertResult = await insertDocument(
+          file,
+          textContent,
+          sessionId,
+          r2Url
+        );
+        const documentId = insertResult[0].insertedId;
 
-      console.log("CHUNKS SPLITTED", chunks)
+        console.log("DOCUMENT ID", documentId);
+        // split text into chunks
+        const splitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 500,
+          chunkOverlap: 100,
+        });
+        const chunks = await splitter.splitText(textContent);
+        await streamResponse({ message: "Split text into chunks" });
 
-      // generate and store vectors for each chunk
-      await processVectors(chunks, sessionId, documentId, streamResponse)
-      await streamResponse({ message: 'Inserted vectors', chunks: chunks.length })
-    }
-    catch (error) {
-      console.log('Error processing upload:', error)
-      await streamResponse({ error: (error as Error).message })
-    }
-    finally {
-      eventStream.close()
-    }
-  })())
+        console.log("CHUNKS SPLITTED", chunks);
 
-  return eventStream.send()
-})
+        // generate and store vectors for each chunk
+        await processVectors(chunks, sessionId, documentId, streamResponse);
+        await streamResponse({
+          message: "Inserted vectors",
+          chunks: chunks.length,
+        });
+      } catch (error) {
+        console.log("Error processing upload:", error);
+        await streamResponse({ error: (error as Error).message });
+      } finally {
+        eventStream.close();
+      }
+    })()
+  );
+
+  return eventStream.send();
+});

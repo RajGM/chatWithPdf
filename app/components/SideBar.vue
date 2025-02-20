@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UploadStreamResponse } from '~/types'
+import { detectDocumentType } from '~/helper/fileCheck'
 
 defineEmits(['hideDrawer'])
 const toast = useToast()
@@ -9,7 +10,9 @@ const documents = useDocuments()
 
 // click to upload
 const { open, onChange, reset } = useFileDialog({
-  accept: 'application/pdf',
+  // Accept more than PDF: docx, text, CSV, XLSX, ...
+  accept: '.pdf, .docx, .txt, .csv, .xlsx, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, text/plain, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  multiple: true,
 })
 onChange(files => uploadFile(files))
 
@@ -17,7 +20,8 @@ onChange(files => uploadFile(files))
 const dropZoneRef = ref<HTMLDivElement>()
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop: uploadFile,
-  dataTypes: ['application/pdf'],
+  // For strict checking, specify data types for PDF, DOCX, etc.
+  dataTypes: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
   multiple: true,
   preventDefaultForUnhandled: true,
 })
@@ -38,6 +42,19 @@ async function uploadFile(files: File[] | FileList | null) {
   }
 
   for (const file of files) {
+    try {
+      detectDocumentType(file)
+    } catch (error) {
+      toast.add({
+        title: 'Invalid file type',
+        description: `File ${file.name} is not supported. 
+                    Please upload PDF, DOCX, TXT, CSV, or XLSX only.`,
+        color: 'error',
+      })
+      console.error('Skipping file', file, error)
+      continue // Skip this file
+    }
+
     const form = new FormData()
     form.append('file', file)
     form.append('sessionId', sessionId.value)
@@ -125,8 +142,8 @@ const dealRoomModalRef = ref<InstanceType<typeof DealRoomModal>>()
       <!-- The Google Picker component -->
       <GooglePicker @file-selected="handleGoogleDriveFile" />
 
-        <!-- Include the DealRoomModal component -->
-        <DealRoomModal ref="dealRoomModalRef" />
+      <!-- Include the DealRoomModal component -->
+      <DealRoomModal ref="dealRoomModalRef" />
 
     </div>
 

@@ -1,24 +1,28 @@
-// utils/fileTypes.ts
-export const ALLOWED_FILE_TYPES = [
-  // PDF
-  "application/pdf",
+// ~/utils/documentType.ts
+import type { Document } from '~/types'
 
-  // MS Word (older)
-  "application/msword",
+export function detectDocumentType(file: File): Document['type'] {
+  // You can do a more robust check, but a quick approach is by MIME type or extension:
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+  const mime = file.type
 
-  // DOCX
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-
-  // Plain text
-  "text/plain",
-
-  // ... add more as needed
-];
-
-/**
- * Checks if a file's MIME type is one of the allowed types.
- * Optionally, you could also fallback to extension checks if needed.
- */
-export function isAllowedFileType(file: File): boolean {
-  return ALLOWED_FILE_TYPES.includes(file.type);
+  // If you want to rely more on extension:
+  if (extension === 'pdf' || mime === 'application/pdf') {
+    return 'pdf'
+  }
+  else if (extension === 'docx' || mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    return 'docx'
+  }
+  else if (extension === 'txt' || mime === 'text/plain') {
+    return 'txt'
+  }
+  else if (extension === 'csv' || mime === 'text/csv') {
+    return 'csv'
+  }
+  else if (extension === 'xlsx' || mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+    return 'xlsx'
+  }
+  
+  // If none of the above, you can handle unknown or throw an error
+  throw new Error(`Unsupported file type: ${file.name}`)
 }

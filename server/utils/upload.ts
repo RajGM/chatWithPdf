@@ -8,14 +8,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 }
 
 export async function uploadPDF(file: File, sessionId: string): Promise<string> {
-  console.log("UPLOADING PDF")
+  console.log('UPLOADING PDF')
   const blob = await hubBlob().put(`${Date.now()}-${file.name}`, file, { prefix: sessionId })
-  console.log("BLOB", blob)
+  console.log('UPLOAD DONE BLOB')
   return blob.pathname
 }
 
 export async function insertDocument(file: File, textContent: string, sessionId: string, r2Url: string) {
-  console.log("INSIDE INSERT DOCUMENT")
   console.log(file, textContent, sessionId, r2Url)
   const row = {
     name: file.name,
@@ -24,7 +23,7 @@ export async function insertDocument(file: File, textContent: string, sessionId:
     sessionId,
     r2Url,
   }
-  console.log("INSERTING DOC:", row)
+  console.log('NSERTING DOC - ERROR POINT:', row.name, row.size, row.r2Url, row.sessionId)
   return useDrizzle().insert(tables.documents).values(row).returning({ insertedId: tables.documents.id })
 }
 
