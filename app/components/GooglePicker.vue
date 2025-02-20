@@ -18,7 +18,7 @@
   
   // These would typically come from your environment variables
   const API_KEY = 'AIzaSyCxV5SficyXoyD7ZkdB-tQalW-xTRX9wtM'
-  const CLIENT_ID = 'YOUR_CLIENT_ID'
+  const CLIENT_ID = '291123850624-6at4b8u7oil4955bknf3trttg2utai1k.apps.googleusercontent.com'
   const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
   
   let picker: any = null
