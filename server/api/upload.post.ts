@@ -7,21 +7,37 @@ export default defineEventHandler(async (event) => {
   const sessionId = formData.get("sessionId") as string;
   const file = formData.get("file") as File;
 
+  const googleDriveUrl = formData.get('googleDriveUrl') as string | null
+  const fileName = formData.get('fileName') as string | null
+
+  if(file){
+    console.log("FILE", file, fileName);
+  }else if(googleDriveUrl){
+    console.log("GOOGLE DRIVE URL", googleDriveUrl);
+  }
+  throw createError({
+    statusCode: 404,
+    message: "File uploading on GDRIVE",
+  });
+
+  //--------------------------------------------------
+
   if (!sessionId)
-    throw createError({ statusCode: 400, message: 'Missing sessionId' });
+    throw createError({ statusCode: 400, message: "Missing sessionId" });
   if (!file || !file.size)
-    throw createError({ statusCode: 400, message: 'No file provided' });
+    throw createError({ statusCode: 400, message: "No file provided" });
   ensureBlob(file, {
-    maxSize: '8MB',
+    maxSize: "8MB",
     types: [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
-      'text/plain', // txt
-      'text/csv', // csv
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
+      "text/plain", // txt
+      "text/csv", // csv
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // xlsx
     ],
-  })
-  
+  });
+
+  console.log("GETTING THE FILE");
   // prevent uploading files to example sessions
   const exampleSessionIds = useExampleSessions();
   if (exampleSessionIds.some(({ id }) => id === sessionId)) {
@@ -35,6 +51,7 @@ export default defineEventHandler(async (event) => {
   const eventStream = createEventStream(event);
   const streamResponse = (data: object) =>
     eventStream.push(JSON.stringify(data));
+ 
 
   // prevent worker from being killed while processing
   event.waitUntil(

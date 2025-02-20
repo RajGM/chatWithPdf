@@ -1,17 +1,16 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2024-07-30',
+  compatibilityDate: "2024-07-30",
   // https://nuxt.com/docs/getting-started/upgrade#testing-nuxt-4
   future: { compatibilityVersion: 4 },
-
   // https://nuxt.com/modules
   modules: [
-    '@nuxthub/core',
-    '@nuxt/eslint',
-    '@nuxt/ui',
-    '@nuxtjs/mdc',
-    '@vueuse/nuxt',
-    'nuxthub-ratelimit',
+    "@nuxthub/core",
+    "@nuxt/eslint",
+    "@nuxt/ui",
+    "@nuxtjs/mdc",
+    "@vueuse/nuxt",
+    "nuxthub-ratelimit",
   ],
 
   // https://hub.nuxt.com/docs/getting-started/installation#options
@@ -24,9 +23,9 @@ export default defineNuxtConfig({
     vectorize: {
       documents: {
         dimensions: 1024,
-        metric: 'euclidean',
+        metric: "euclidean",
         metadataIndexes: {
-          sessionId: 'string',
+          sessionId: "string",
         },
       },
     },
@@ -34,7 +33,7 @@ export default defineNuxtConfig({
 
   nuxtHubRateLimit: {
     routes: {
-      '/api/*': {
+      "/api/*": {
         maxRequests: 20,
         intervalSeconds: 60,
       },
@@ -47,7 +46,7 @@ export default defineNuxtConfig({
     },
     externals: {
       // Inline these packages so that Nitro bundles them rather than treating them as externals
-      inline: ["csv-parse", "readable-stream", "string_decoder"]
+      inline: ["csv-parse", "readable-stream", "string_decoder"],
     },
   },
 
@@ -55,11 +54,11 @@ export default defineNuxtConfig({
   eslint: {
     config: {
       stylistic: {
-        quotes: 'single',
+        quotes: "single",
       },
     },
   },
 
   // https://devtools.nuxt.com
   devtools: { enabled: true },
-})
+});
