@@ -14,6 +14,7 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.3",
     "@google-cloud/vision": "^4.3.2",
     "@langchain/textsplitters": "^0.1.0",
     "@nuxt/eslint": "^0.7.2",
@@ -29,6 +30,7 @@
     "nuxt": "^3.14.1592",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.7",
+    "tesseract.js": "^6.0.0",
     "unpdf": "^0.12.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

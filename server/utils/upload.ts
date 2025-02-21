@@ -131,7 +131,7 @@ import { parse } from "csv-parse/sync";
 export async function extractTextFromCsv(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
   const csvString = new TextDecoder("utf-8").decode(buffer);
-  
+
   // Parse CSV into rows
   const records = parse(csvString, {
     columns: false,
@@ -155,8 +155,8 @@ export async function extractTextFromXlsx(file: File): Promise<string> {
     worksheet.eachRow((row) => {
       // row.values can include empty or undefined values; filter them out.
       const rowText = row.values
-        .filter(cell => cell !== null && cell !== undefined)
-        .map(cell => cell.toString())
+        .filter((cell) => cell !== null && cell !== undefined)
+        .map((cell) => cell.toString())
         .join(" ");
       extractedText += rowText + "\n";
     });
@@ -169,63 +169,55 @@ export async function extractTextFromTxt(file: File): Promise<string> {
   return new TextDecoder().decode(buffer);
 }
 
-export async function extractTextFromImageUsingClaude(file: File): Promise<string> {
+import Anthropic from '@anthropic-ai/sdk';
+
+
+export async function extractTextFromImageUsingClaude(
+  file: File
+): Promise<string> {
+  const client = new Anthropic({
+    apiKey: process.env['CLAUDE_KEY'], // This is the default and can be omitted
+  });
   // Convert the file to a Base64-encoded string.
   const buffer = await file.arrayBuffer();
   const base64Image = Buffer.from(buffer).toString("base64");
 
-  // Construct the request payload.
-  // Adjust the payload parameters as required by the official Claude Vision API docs.
-  const requestBody = {
-    image: {
-      content: base64Image,
-    },
-    features: [
-      {
-        type: "TEXT_DETECTION",
-      },
-    ],
-  };
+  try {
+    const response = await client.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: file.type,
+                data: base64Image, // Pass the Base64 image data
+              },
+            },
+            {
+              type: 'text',
+              text: 'Extract the Text out of this Image', // Your prompt
+            },
+          ],
+        },
+      ],
+    });
 
-  // Retrieve your Claude Vision API key from an environment variable.
-  const apiKey = process.env.CLAUDE_KEY;
-  if (!apiKey) {
-    throw new Error("Missing Anthropic Claude Vision API key.");
-  }
-
-  // Make the POST request to the Claude Vision endpoint.
-  // (The endpoint URL below is an example. Please refer to Anthropic’s documentation for the correct URL.)
-  const response = await fetch("https://api.anthropic.com/v1/claude/vision:annotate", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Claude Vision API error: ${response.statusText} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  // Assuming the response contains a field with the extracted text.
-  // (Adjust according to the actual response format.)
-  if (!data || !data.responses || !data.responses[0]?.textAnnotations) {
-    throw new Error("No text detected in the image.");
+    console.log('Response from Claude:', response.content[0].text);
+    return response.content[0].text;
+  } catch (error) {
+    console.error('Error sending image to Claude:', error);
   }
   
-  return data.responses[0].textAnnotations[0].description;
 }
 
-
-
-export async function extractText(
-  file: File,
-): Promise<string> {
+export async function extractText(file: File): Promise<string> {
   // Make it case-insensitive
-  console.log(file)
+  console.log(file);
   const normalizedType = file.type.toLowerCase();
   console.log("NORMALIZED TYPE:", normalizedType);
   switch (normalizedType) {
