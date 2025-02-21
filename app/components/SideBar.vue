@@ -114,16 +114,8 @@ async function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
   const { docs, token } = payload
   for (const doc of docs) {
     // Build a direct download URL with the token
-    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}/export?mimeType=${doc.mimeType}`;
-    console.log("Download URL:", downloadUrl);
-    const fileResponse = await fetch(downloadUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const blob = await fileResponse.blob();
-    console.log("Fetched blob for debugging:", blob);
-
+    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}/export?mimeType=application/pdf`;
+  
     // 1) Add an entry to "documents" for progress display
     documents.value.push({
       name: doc.name,
@@ -138,9 +130,10 @@ async function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
     form.append('sessionId', sessionId.value)
     form.append('googleDriveUrl', downloadUrl)
     form.append('fileName', doc.name)  // optional if your server wants a name
-
+    form.append('token', token) 
+    console.log('token', token)
     // 3) Stream the response
-    /*
+    
     ; (async () => {
       try {
         const response = useStream<UploadStreamResponse>('/api/upload', form)()
@@ -164,7 +157,7 @@ async function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
         documents.value = documents.value.filter(d => d.name !== doc.name)
       }
     })()
-*/
+
 
 
   }

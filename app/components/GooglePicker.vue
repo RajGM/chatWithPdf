@@ -21,7 +21,7 @@ interface GooglePickerDocument {
 // These would typically come from your environment variables
 const API_KEY = 'AIzaSyCxV5SficyXoyD7ZkdB-tQalW-xTRX9wtM'
 const CLIENT_ID = '291123850624-6at4b8u7oil4955bknf3trttg2utai1k.apps.googleusercontent.com'
-const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+const SCOPES = ['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive']
 
 let picker: any = null
 let tokenClient: any = null
@@ -89,9 +89,8 @@ function openPicker() {
     const accessToken = response.access_token
     oauthToken.value = response.access_token
 
-    const tokenInfo = await verifyAccessToken(accessToken);
-    console.log("Token is valid:", tokenInfo);
-    //oauthToken.value = token;
+    // const tokenInfo = await verifyAccessToken(accessToken);
+    // oauthToken.value = token;
 
     createPicker(accessToken)
   }

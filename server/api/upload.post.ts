@@ -5,42 +5,45 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 export default defineEventHandler(async (event) => {
   const formData = await readFormData(event);
   const sessionId = formData.get("sessionId") as string;
-  // const file = formData.get("file") as File;
-  // console.log("FILE", file.type);
+  const file = formData.get("file") as File | null;
   //--------------------------------------------------
-  async function fetchFromGoogleDriveUrl(googleDriveUrl: string, fileName?: string): Promise<File> {
-    const response = await fetch(googleDriveUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch Google Drive URL: ${response.status}`);
-    }
-    const blob = await response.blob();
+
+  async function fetchFromGoogleDriveUrl(
+    googleDriveUrl: string,
+    token: string,
+    fileName?: string
+  ): Promise<File> {
+    console.log("token", token);
+    console.log("Download URL:", googleDriveUrl);
+    const fileResponse = await fetch(googleDriveUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Log status and headers for debugging
+    console.log("Status:", fileResponse.status);
+    console.log("Content-Type:", fileResponse.headers.get("content-type"));
+
+    const blob = await fileResponse.blob();
+    console.log("Fetched blob for debugging:", blob);
+
     const finalFile = new File([blob], fileName || "untitled", {
       type: blob.type,
     });
-    console.log("FINAL FILE", finalFile);
     return finalFile;
   }
-  
 
   const googleDriveUrl = formData.get("googleDriveUrl") as string | null;
-  console.log("GOOGLE DRIVE URL", googleDriveUrl);
+  const token = formData.get("token") as string | null;
+  const fileName = formData.get("fileName") as string | null;
+  let file2: File | null = null;
   if (googleDriveUrl) {
-    const file2 = await fetchFromGoogleDriveUrl(googleDriveUrl);
-    console.log("FILE", file2);
-    throw createError({ statusCode: 400, message: "No file provided TEST" });
+    file2 = await fetchFromGoogleDriveUrl(googleDriveUrl, token, fileName);
+    const txt = extractText(file2),
+    console.log("TEXT", txt);
+    return txt;
   }
-
-  //const fileName = formData.get('fileName') as string | null
-
-  // if(file){
-  //   console.log("FILE", file, fileName);
-  // }else if(googleDriveUrl){
-  //   console.log("GOOGLE DRIVE URL", googleDriveUrl);
-  // }
-  // throw createError({
-  //   statusCode: 404,
-  //   message: "File uploading on GDRIVE",
-  // });
 
   //--------------------------------------------------
 
