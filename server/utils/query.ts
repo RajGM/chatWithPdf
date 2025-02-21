@@ -157,4 +157,5 @@ export async function processUserQuery({ sessionId, messages }: { sessionId: str
   })
 
   return { messages }
+  //  return { messages, citations: relevantDocs }
 }

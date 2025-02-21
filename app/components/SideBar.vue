@@ -101,6 +101,7 @@ function setExampleSession(exampleSessionId: string) {
   const { id, ...documentInfo } = exampleSessions.find(example => example.id === exampleSessionId)!
   documents.value.push(documentInfo)
   sessionId.value = exampleSessionId
+  
 }
 
 // Import the DealRoomModal component

@@ -63,17 +63,6 @@ function loadScript(src: string): Promise<void> {
   })
 }
 
-async function verifyAccessToken(token: string): Promise<any> {
-  const res = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`);
-  if (!res.ok) {
-    throw new Error('Invalid or expired token');
-  }
-  const data = await res.json();
-  // data will contain details like "aud", "expires_in", etc.
-  return data;
-}
-
-
 function openPicker() {
   if (!tokenClient) {
     console.error('Token client not initialized')
@@ -88,9 +77,6 @@ function openPicker() {
 
     const accessToken = response.access_token
     oauthToken.value = response.access_token
-
-    // const tokenInfo = await verifyAccessToken(accessToken);
-    // oauthToken.value = token;
 
     createPicker(accessToken)
   }

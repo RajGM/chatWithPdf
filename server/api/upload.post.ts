@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
   const formData = await readFormData(event);
   const sessionId = formData.get("sessionId") as string;
   const file = formData.get("file") as File | null;
+  /*
   //--------------------------------------------------
 
   async function fetchFromGoogleDriveUrl(
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
   }
 
   //--------------------------------------------------
-
+*/
   if (!sessionId)
     throw createError({ statusCode: 400, message: "Missing sessionId" });
   if (!file || !file.size)
@@ -91,15 +92,14 @@ export default defineEventHandler(async (event) => {
     (async () => {
       try {
         // upload file, extract text, and insert document
-        //const [r2Url, textContent] = await Promise.all([
-        const [textContent] = await Promise.all([
-          //uploadPDF(file, sessionId),
+        const [r2Url, textContent] = await Promise.all([
+        //const [textContent] = await Promise.all([
+          uploadPDF(file, sessionId),
           extractText(file),
         ]);
         console.log("textContent", !textContent);
         await streamResponse({ message: "Extracted text from PDF" });
 
-        return;
         console.log("BEFORE INSERTING");
         const insertResult = await insertDocument(
           file,

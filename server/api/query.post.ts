@@ -26,6 +26,19 @@ export default defineEventHandler(async (event) => {
         const chunkString = new TextDecoder().decode(chunk).slice(5) // remove data: prefix
         await eventStream.push(chunkString)
       }
+
+       // Stream citations separately
+      //  if (citations && citations.length > 0) {
+      //   await streamResponse({
+      //     message: 'Citations for the response:',
+      //     citations: citations.map((doc, index) => ({
+      //       id: doc.id,
+      //       citation: `[${index + 1}]: ${doc.text.slice(0, 100)}...`, // Send a preview of the citation
+      //     })),
+      //   });
+      // }
+
+
     }
     catch (error) {
       consola.error(error)
