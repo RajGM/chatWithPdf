@@ -110,11 +110,19 @@ const dealRoomModalRef = ref<InstanceType<typeof DealRoomModal>>()
 
 //--------------------------------------------------------------------
 
-function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
+async function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
   const { docs, token } = payload
   for (const doc of docs) {
     // Build a direct download URL with the token
-    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media&access_token=${token}`
+    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}/export?mimeType=${doc.mimeType}`;
+    console.log("Download URL:", downloadUrl);
+    const fileResponse = await fetch(downloadUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const blob = await fileResponse.blob();
+    console.log("Fetched blob for debugging:", blob);
 
     // 1) Add an entry to "documents" for progress display
     documents.value.push({
@@ -131,30 +139,34 @@ function handleGoogleDriveFile(payload: { docs: any[]; token: string }) {
     form.append('googleDriveUrl', downloadUrl)
     form.append('fileName', doc.name)  // optional if your server wants a name
 
-      // 3) Stream the response
-      ; (async () => {
-        try {
-          const response = useStream<UploadStreamResponse>('/api/upload', form)()
-          for await (const chunk of response) {
-            if (chunk.message) document!.progress = chunk.message
-            if (chunk.chunks) document!.chunks = chunk.chunks
-            if (chunk.error) throw new Error(chunk.error)
-          }
-          delete document?.progress
-          toast.add({
-            title: 'File uploaded',
-            description: doc.name,
-          })
+    // 3) Stream the response
+    /*
+    ; (async () => {
+      try {
+        const response = useStream<UploadStreamResponse>('/api/upload', form)()
+        for await (const chunk of response) {
+          if (chunk.message) document!.progress = chunk.message
+          if (chunk.chunks) document!.chunks = chunk.chunks
+          if (chunk.error) throw new Error(chunk.error)
         }
-        catch (err) {
-          toast.add({
-            title: 'Error uploading file',
-            description: `An error occurred while uploading ${doc.name}. ${(err as Error).message}`,
-            color: 'error',
-          })
-          documents.value = documents.value.filter(d => d.name !== doc.name)
-        }
-      })()
+        delete document?.progress
+        toast.add({
+          title: 'File uploaded',
+          description: doc.name,
+        })
+      }
+      catch (err) {
+        toast.add({
+          title: 'Error uploading file',
+          description: `An error occurred while uploading ${doc.name}. ${(err as Error).message}`,
+          color: 'error',
+        })
+        documents.value = documents.value.filter(d => d.name !== doc.name)
+      }
+    })()
+*/
+
+
   }
 
 }

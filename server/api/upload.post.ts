@@ -5,11 +5,32 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 export default defineEventHandler(async (event) => {
   const formData = await readFormData(event);
   const sessionId = formData.get("sessionId") as string;
-  const file = formData.get("file") as File;
-  console.log("FILE", file.type);
+  // const file = formData.get("file") as File;
+  // console.log("FILE", file.type);
   //--------------------------------------------------
-  // const googleDriveUrl = formData.get('googleDriveUrl') as string | null
-  // const fileName = formData.get('fileName') as string | null
+  async function fetchFromGoogleDriveUrl(googleDriveUrl: string, fileName?: string): Promise<File> {
+    const response = await fetch(googleDriveUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Google Drive URL: ${response.status}`);
+    }
+    const blob = await response.blob();
+    const finalFile = new File([blob], fileName || "untitled", {
+      type: blob.type,
+    });
+    console.log("FINAL FILE", finalFile);
+    return finalFile;
+  }
+  
+
+  const googleDriveUrl = formData.get("googleDriveUrl") as string | null;
+  console.log("GOOGLE DRIVE URL", googleDriveUrl);
+  if (googleDriveUrl) {
+    const file2 = await fetchFromGoogleDriveUrl(googleDriveUrl);
+    console.log("FILE", file2);
+    throw createError({ statusCode: 400, message: "No file provided TEST" });
+  }
+
+  //const fileName = formData.get('fileName') as string | null
 
   // if(file){
   //   console.log("FILE", file, fileName);
@@ -62,7 +83,7 @@ export default defineEventHandler(async (event) => {
 
   // prevent worker from being killed while processing
   console.log("WAIT UNTIL");
-  console.log("---------------------------------")
+  console.log("---------------------------------");
   event.waitUntil(
     (async () => {
       try {

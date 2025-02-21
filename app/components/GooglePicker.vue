@@ -25,6 +25,7 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 let picker: any = null
 let tokenClient: any = null
+declare const gapi: any;
 
 onMounted(() => {
   loadGoogleAPIs()
@@ -62,6 +63,17 @@ function loadScript(src: string): Promise<void> {
   })
 }
 
+async function verifyAccessToken(token: string): Promise<any> {
+  const res = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`);
+  if (!res.ok) {
+    throw new Error('Invalid or expired token');
+  }
+  const data = await res.json();
+  // data will contain details like "aud", "expires_in", etc.
+  return data;
+}
+
+
 function openPicker() {
   if (!tokenClient) {
     console.error('Token client not initialized')
@@ -76,6 +88,11 @@ function openPicker() {
 
     const accessToken = response.access_token
     oauthToken.value = response.access_token
+
+    const tokenInfo = await verifyAccessToken(accessToken);
+    console.log("Token is valid:", tokenInfo);
+    //oauthToken.value = token;
+
     createPicker(accessToken)
   }
 
@@ -105,13 +122,14 @@ function createPicker(accessToken: string) {
   picker.setVisible(true)
 }
 
-function pickerCallback(data) {
+async function pickerCallback(data) {
   if (data.action === google.picker.Action.PICKED && data.docs && data.docs.length) {
     const docs = data.docs // array of selected documents
     console.log('Selected documents from Drive:', docs)
 
     // Instead of uploading here, we emit the docs + token to the parent
     // We'll let the parent handle the actual upload (FormData + streaming)
+
     emit('file-selected', {
       docs,
       token: oauthToken.value
