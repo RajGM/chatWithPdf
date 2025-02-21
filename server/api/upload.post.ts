@@ -6,19 +6,20 @@ export default defineEventHandler(async (event) => {
   const formData = await readFormData(event);
   const sessionId = formData.get("sessionId") as string;
   const file = formData.get("file") as File;
+  console.log("FILE", file.type);
+  //--------------------------------------------------
+  // const googleDriveUrl = formData.get('googleDriveUrl') as string | null
+  // const fileName = formData.get('fileName') as string | null
 
-  const googleDriveUrl = formData.get('googleDriveUrl') as string | null
-  const fileName = formData.get('fileName') as string | null
-
-  if(file){
-    console.log("FILE", file, fileName);
-  }else if(googleDriveUrl){
-    console.log("GOOGLE DRIVE URL", googleDriveUrl);
-  }
-  throw createError({
-    statusCode: 404,
-    message: "File uploading on GDRIVE",
-  });
+  // if(file){
+  //   console.log("FILE", file, fileName);
+  // }else if(googleDriveUrl){
+  //   console.log("GOOGLE DRIVE URL", googleDriveUrl);
+  // }
+  // throw createError({
+  //   statusCode: 404,
+  //   message: "File uploading on GDRIVE",
+  // });
 
   //--------------------------------------------------
 
@@ -34,6 +35,13 @@ export default defineEventHandler(async (event) => {
       "text/plain", // txt
       "text/csv", // csv
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // xlsx
+      "image/jpeg", // JPEG
+      "image/png", // PNG
+      "image/gif", // GIF
+      "image/bmp", // BMP
+      "image/webp", // WebP
+      "image/svg+xml", // SVG
+      "image/tiff", // TIFF
     ],
   });
 
@@ -51,19 +59,23 @@ export default defineEventHandler(async (event) => {
   const eventStream = createEventStream(event);
   const streamResponse = (data: object) =>
     eventStream.push(JSON.stringify(data));
- 
 
   // prevent worker from being killed while processing
+  console.log("WAIT UNTIL");
+  console.log("---------------------------------")
   event.waitUntil(
     (async () => {
       try {
         // upload file, extract text, and insert document
-        const [r2Url, textContent] = await Promise.all([
-          uploadPDF(file, sessionId),
-          extractTextFromPDF(file),
+        //const [r2Url, textContent] = await Promise.all([
+        const [textContent] = await Promise.all([
+          //uploadPDF(file, sessionId),
+          extractText(file),
         ]);
+        console.log("textContent", !textContent);
         await streamResponse({ message: "Extracted text from PDF" });
 
+        return;
         console.log("BEFORE INSERTING");
         const insertResult = await insertDocument(
           file,

@@ -5,6 +5,11 @@ export function detectDocumentType(file: File): Document['type'] {
   // You can do a more robust check, but a quick approach is by MIME type or extension:
   const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
   const mime = file.type
+  console.log(extension, mime)
+
+  if (mime.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'].includes(extension)) {
+    return 'image';
+  }
 
   // If you want to rely more on extension:
   if (extension === 'pdf' || mime === 'application/pdf') {

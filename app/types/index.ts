@@ -88,5 +88,5 @@ export interface Document {
   size: number
   chunks: number | null
   progress?: string
-  type: 'pdf' | 'docx' | 'txt' | 'csv' | 'xlsx' | 'google-doc'
+  type: 'pdf' | 'docx' | 'txt' | 'csv' | 'xlsx' | 'google-doc' | 'image'
 }
